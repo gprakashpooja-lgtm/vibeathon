@@ -250,13 +250,19 @@ const handleDrop = (e: React.DragEvent) => {
   reader.readAsDataURL(file);
 };
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImage(URL.createObjectURL(file))
-    }
-  }
+const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
 
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onloadend = () => {
+    setImage(reader.result as string);
+  };
+
+  reader.readAsDataURL(file);
+};
   return (
     <div className="min-h-screen px-6 py-12 pt-24">
       <div className="max-w-5xl mx-auto">
