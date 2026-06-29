@@ -233,14 +233,22 @@ function RoomUpload({ onUpload }: { onUpload: (image: string, roomType: RoomType
   const [image, setImage] = useState<string>('')
   const [isDragActive, setIsDragActive] = useState(false)
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragActive(false)
-    const file = e.dataTransfer.files[0]
-    if (file && file.type.startsWith('image/')) {
-      setImage(URL.createObjectURL(file))
-    }
-  }
+const handleDrop = (e: React.DragEvent) => {
+  e.preventDefault();
+  setIsDragActive(false);
+
+  const file = e.dataTransfer.files[0];
+
+  if (!file || !file.type.startsWith("image/")) return;
+
+  const reader = new FileReader();
+
+  reader.onloadend = () => {
+    setImage(reader.result as string);
+  };
+
+  reader.readAsDataURL(file);
+};
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
