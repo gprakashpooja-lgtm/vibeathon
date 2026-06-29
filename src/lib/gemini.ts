@@ -1,7 +1,8 @@
 export async function generateRoom(image: string, style: string) {
   const response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=" +
-      import.meta.env.VITE_GEMINI_API_KEY,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${
+      import.meta.env.VITE_GEMINI_API_KEY
+    }`,
     {
       method: "POST",
       headers: {
@@ -12,11 +13,12 @@ export async function generateRoom(image: string, style: string) {
           {
             parts: [
               {
-                text: `Redesign this room into a ${style} interior. Keep the architecture exactly the same. Only replace furniture, colors, decor and lighting.`,
+                text: `Transform this room into a ${style} interior design. 
+Keep walls, structure, and layout unchanged. Only redesign furniture, lighting, colors, and decoration.`,
               },
               {
                 inlineData: {
-                  mimeType: "image/jpeg",
+                  mimeType: "image/png",
                   data: image.split(",")[1],
                 },
               },
