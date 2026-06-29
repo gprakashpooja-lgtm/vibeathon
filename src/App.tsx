@@ -272,12 +272,13 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
     // Temporary placeholder
     setGenerated(image);
     onComplete(style, image);
-  } catch (error) {
-    console.error("Generation failed:", error);
-  } finally {
-    setIsGenerating(false);
-  }
-};
+  } const result = await generateRoomDesign(
+  image,
+  roomType,
+  style
+);
+
+console.log(result);
 
 // Budget Estimator Component
 function BudgetEstimator({ style }: { style: DesignStyle }) {
