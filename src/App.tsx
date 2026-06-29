@@ -356,9 +356,9 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
     clearInterval(interval)
 
     const generatedImage =
-      result.candidates?.[0]?.content?.parts?.find(
-        (part: any) => part.inlineData
-      )?.inlineData?.data
+  result?.candidates?.[0]?.content?.parts?.find(
+    (p: any) => p.inlineData?.data
+  )?.inlineData?.data;
 
     if (!generatedImage) {
       throw new Error("No image returned from Gemini")
