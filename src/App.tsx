@@ -46,28 +46,6 @@ const budgetCategories = [
 ]
 
 // Different transformed room images for each style
-const transformedRooms: Record<DesignStyle, Record<RoomType, string>> = {
-  minimal: {
-    bedroom: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    living_room: 'https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    study_room: 'https://images.pexels.com/photos/279648/pexels-photo-279648.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  },
-  luxury: {
-    bedroom: 'https://images.pexels.com/photos/1648776/pexels-photo-1648776.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    living_room: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    study_room: 'https://images.pexels.com/photos/1112530/pexels-photo-1112530.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  },
-  modern: {
-    bedroom: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    living_room: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    study_room: 'https://images.pexels.com/photos/1597116/pexels-photo-1597116.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  },
-  gaming: {
-    bedroom: 'https://images.pexels.com/photos/776892/pexels-photo-776892.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    living_room: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    study_room: 'https://images.pexels.com/photos/2098427/pexels-photo-2098427.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  },
-}
 
 const furnitureData: Record<DesignStyle, Array<{ name: string; description: string; price: number; image: string; link: string }>> = {
   minimal: [
@@ -326,106 +304,35 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
   const [stage, setStage] = useState(0)
   const [generated, setGenerated] = useState('')
 
-  const handleGenerate = () => {
-    setIsGenerating(true)
-    setStage(0)
-    setGenerated('')
+  const handleGenerate = async () => {
+  setIsGenerating(true);
+  setStage(0);
+  setGenerated("");
 
-    const interval = setInterval(() => {
-      setStage(s => {
-        if (s >= 3) { clearInterval(interval); return s }
-        return s + 1
-      })
-    }, 1500)
+  const interval = setInterval(() => {
+    setStage((s) => {
+      if (s >= 3) {
+        clearInterval(interval);
+        return s;
+      }
+      return s + 1;
+    });
+  }, 1500);
 
-    setTimeout(() => {
-      const resultImage = transformedRooms[style][roomType]
-      setIsGenerating(false)
-      setGenerated(resultImage)
-      onComplete(style, resultImage)
-    }, 6000)
+  try {
+    // Gemini API will be added here in the next step.
+
+    await new Promise((resolve) => setTimeout(resolve, 6000));
+
+    // Temporary placeholder
+    setGenerated(image);
+    onComplete(style, image);
+  } catch (error) {
+    console.error("Generation failed:", error);
+  } finally {
+    setIsGenerating(false);
   }
-
-  return (
-    <div className="min-h-screen px-6 py-12 pt-24">
-      <div className="max-w-6xl mx-auto">
-        <motion.div className="text-center mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-gray-800 mb-3">AI Room <span className="gradient-text">Makeover</span></h2>
-          <p className="text-gray-500 text-lg">Choose your design style</p>
-        </motion.div>
-
-        <motion.div className="mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {designStyles.map((s) => {
-              const Icon = s.icon
-              return (
-                <motion.button key={s.id} onClick={() => !isGenerating && setStyle(s.id)} disabled={isGenerating} className={`style-card glass-card rounded-2xl p-5 text-left ${style === s.id ? 'selected' : ''} ${isGenerating ? 'opacity-60' : ''}`} whileHover={!isGenerating ? { scale: 1.02 } : undefined}>
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3 shadow-md`}>
-                    <Icon className="w-6 h-6 text-gray-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-800">{s.label}</h4>
-                  <p className="text-gray-500 text-sm">{s.description}</p>
-                </motion.button>
-              )
-            })}
-          </div>
-        </motion.div>
-
-        <AnimatePresence mode="wait">
-          {isGenerating ? (
-            <motion.div key="loading" className="glass-card rounded-3xl p-12 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <motion.div className="w-32 h-32 mx-auto mb-8 rounded-full bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center shadow-2xl" animate={{ rotate: [0, 5, -5, 0] }} transition={{ duration: 2, repeat: Infinity }}>
-                <Wand2 className="w-16 h-16 text-white" />
-              </motion.div>
-              <div className="max-w-md mx-auto space-y-4">
-                {loadingStages.map((s, i) => (
-                  <motion.div key={i} className={`flex items-center gap-3 p-3 rounded-xl ${i <= stage ? 'bg-pink-50' : 'bg-gray-50 opacity-50'}`} animate={i === stage ? { x: [0, 5, 0] } : {}}>
-                    <span className="text-2xl">{s.icon}</span>
-                    <span className={`font-medium ${i <= stage ? 'text-pink-600' : 'text-gray-400'}`}>{s.text}</span>
-                    {i < stage && <Check className="w-5 h-5 text-pink-500 ml-auto" />}
-                  </motion.div>
-                ))}
-              </div>
-              <div className="mt-8 w-full max-w-md mx-auto h-2 bg-pink-100 rounded-full overflow-hidden">
-                <motion.div className="h-full bg-gradient-to-r from-pink-400 to-pink-500 rounded-full" initial={{ width: '0%' }} animate={{ width: `${((stage + 1) / 4) * 100}%` }} />
-              </div>
-            </motion.div>
-          ) : generated ? (
-            <motion.div key="results" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <div className="grid md:grid-cols-2 gap-6">
-                {[{ label: 'Before', img: image }, { label: `After - ${designStyles.find(s => s.id === style)?.label}`, img: generated }].map((item, i) => (
-                  <motion.div key={i} className="glass-card rounded-3xl overflow-hidden" initial={{ opacity: 0, x: i === 0 ? -30 : 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} style={i === 1 ? { boxShadow: '0 20px 60px rgba(244, 114, 182, 0.2)' } : {}}>
-                    <div className={`p-4 ${i === 0 ? 'bg-gray-50/50' : 'bg-gradient-to-r from-pink-50 to-pink-100/50'} border-b border-pink-100`}>
-                      <span className={`inline-flex items-center gap-2 text-sm font-medium ${i === 0 ? 'text-gray-600' : 'text-pink-600'}`}>
-                        {i === 1 && <Sparkles className="w-4 h-4" />}
-                        {item.label}
-                      </span>
-                    </div>
-                    <div className="p-3">
-                      <img src={item.img} alt={item.label} className="w-full h-64 md:h-80 object-cover rounded-2xl" />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              <motion.div className="mt-8 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-                <span className="inline-flex items-center gap-2 px-6 py-3 rounded-full glass-card text-pink-600 font-medium">
-                  <Sparkles className="w-5 h-5" /> Your dream room is ready!
-                </span>
-              </motion.div>
-            </motion.div>
-          ) : (
-            <motion.div key="generate" className="glass-card rounded-3xl p-10 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <img src={image} alt="Preview" className="w-64 h-48 object-cover rounded-2xl mx-auto shadow-lg mb-8" />
-              <motion.button onClick={handleGenerate} className="btn-primary inline-flex items-center gap-3 text-lg px-12 py-5" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                <Wand2 className="w-5 h-5" /> Generate AI Makeover <ArrowRight className="w-5 h-5" />
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  )
-}
+};
 
 // Budget Estimator Component
 function BudgetEstimator({ style }: { style: DesignStyle }) {
