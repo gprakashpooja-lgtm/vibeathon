@@ -98,31 +98,35 @@ const furnitureData: Record<DesignStyle, Array<{ name: string; description: stri
 
 // Floating Elements Component
 function FloatingElements() {
-  const hearts = Array.from({ length: 40 }, (_, i) => ({
+  const hearts = Array.from({ length: 28 }, (_, i) => ({
     id: i,
-    left: Math.random() * 100,
-    delay: Math.random() * 5,
-    duration: 8 + Math.random() * 8,
-    size: 12 + Math.random() * 20,
-    opacity: 0.2 + Math.random() * 0.5,
+    left:
+      Math.random() < 0.5
+        ? Math.random() * 20 // Left side
+        : 80 + Math.random() * 20, // Right side
+    delay: Math.random() * 10,
+    duration: 10 + Math.random() * 8,
+    size: 10 + Math.random() * 14,
+    opacity: 0.15 + Math.random() * 0.35,
   }));
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-10">
+
       {hearts.map((heart) => (
         <motion.div
           key={heart.id}
-          className="absolute text-pink-300"
+          className="absolute"
           style={{
             left: `${heart.left}%`,
-            bottom: "-40px",
+            bottom: "-50px",
             opacity: heart.opacity,
           }}
           animate={{
-            y: [-20, -1200],
-            x: [0, 30, -30, 20, 0],
-            rotate: [0, 20, -20, 0],
-            scale: [0.8, 1.2, 1],
+            y: [0, -1200],
+            x: [0, 25, -20, 15, 0],
+            rotate: [0, 15, -15, 10, 0],
+            scale: [0.7, 1.1, 0.9, 1],
           }}
           transition={{
             duration: heart.duration,
@@ -133,24 +137,52 @@ function FloatingElements() {
         >
           <Heart
             size={heart.size}
-            fill="currentColor"
-            strokeWidth={0}
+            fill="#f9a8d4"
+            stroke="none"
           />
         </motion.div>
       ))}
 
+      {/* Soft Glow Left */}
       <motion.div
-        className="absolute w-[500px] h-[500px] rounded-full bg-pink-300/20 blur-3xl"
-        style={{ left: "-150px", top: "100px" }}
-        animate={{ x: [0, 80, 0], y: [0, 40, 0] }}
-        transition={{ duration: 20, repeat: Infinity }}
+        className="absolute rounded-full blur-3xl"
+        style={{
+          width: 450,
+          height: 450,
+          background:
+            "radial-gradient(circle,#f9a8d455 0%,transparent 70%)",
+          left: -150,
+          top: 150,
+        }}
+        animate={{
+          x: [0, 60, 0],
+          y: [0, 40, 0],
+        }}
+        transition={{
+          duration: 18,
+          repeat: Infinity,
+        }}
       />
 
+      {/* Soft Glow Right */}
       <motion.div
-        className="absolute w-[400px] h-[400px] rounded-full bg-rose-300/20 blur-3xl"
-        style={{ right: "-100px", bottom: "0px" }}
-        animate={{ x: [0, -60, 0], y: [0, -50, 0] }}
-        transition={{ duration: 18, repeat: Infinity }}
+        className="absolute rounded-full blur-3xl"
+        style={{
+          width: 380,
+          height: 380,
+          background:
+            "radial-gradient(circle,#f472b655 0%,transparent 70%)",
+          right: -100,
+          bottom: 0,
+        }}
+        animate={{
+          x: [0, -50, 0],
+          y: [0, -30, 0],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+        }}
       />
     </div>
   );
