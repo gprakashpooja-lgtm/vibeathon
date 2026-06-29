@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { generateRoom } from "./lib/gemini"
 import {
   ArrowLeft, Sparkles, DollarSign, ShoppingBag, Home, Upload, X, Bed, Sofa, BookOpen, Check,
   Wand2, ArrowRight, Heart, Paintbrush, Lamp, Flower2, TrendingUp, ExternalLink, RotateCcw
