@@ -327,25 +327,40 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
   const [stage, setStage] = useState(0)
   const [generated, setGenerated] = useState('')
 
-  const handleGenerate = () => {
-    setIsGenerating(true)
-    setStage(0)
-    setGenerated('')
+  const handleGenerate = async () => {
+  setIsGenerating(true)
+  setStage(0)
+  setGenerated('')
 
+  try {
     const interval = setInterval(() => {
-      setStage(s => {
-        if (s >= 3) { clearInterval(interval); return s }
-        return s + 1
-      })
+      setStage((s) => (s < 3 ? s + 1 : s))
     }, 1500)
 
-    setTimeout(() => {
-      const resultImage = transformedRooms[style][roomType]
-      setIsGenerating(false)
-      setGenerated(resultImage)
-      onComplete(style, resultImage)
-    }, 6000)
+    const result = await generateRoom(image, style)
+
+    clearInterval(interval)
+
+    const generatedImage =
+      result.candidates?.[0]?.content?.parts?.find(
+        (part: any) => part.inlineData
+      )?.inlineData?.data
+
+    if (!generatedImage) {
+      throw new Error("No image returned from Gemini")
+    }
+
+    const finalImage = `data:image/png;base64,${generatedImage}`
+
+    setGenerated(finalImage)
+    onComplete(style, finalImage)
+  } catch (error) {
+    console.error(error)
+    alert("AI generation failed.")
+  } finally {
+    setIsGenerating(false)
   }
+}
 
   return (
     <div className="min-h-screen px-6 py-12 pt-24">
