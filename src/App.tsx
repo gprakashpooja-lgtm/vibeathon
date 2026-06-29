@@ -98,44 +98,62 @@ const furnitureData: Record<DesignStyle, Array<{ name: string; description: stri
 
 // Floating Elements Component
 function FloatingElements() {
-  const elements = [
-    { Icon: Sparkles, x: '10%', y: '20%', delay: 0, size: 20 },
-    { Icon: Heart, x: '85%', y: '15%', delay: 1, size: 16 },
-    { Icon: Sparkles, x: '70%', y: '70%', delay: 2, size: 18 },
-    { Icon: Heart, x: '20%', y: '60%', delay: 0.5, size: 14 },
-    { Icon: Sparkles, x: '90%', y: '50%', delay: 1.5, size: 12 },
-    { Icon: Heart, x: '15%', y: '80%', delay: 2.5, size: 16 },
-    { Icon: Sparkles, x: '50%', y: '10%', delay: 3, size: 22 },
-    { Icon: Heart, x: '30%', y: '30%', delay: 0.8, size: 10 },
-  ]
+  const hearts = Array.from({ length: 40 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 5,
+    duration: 8 + Math.random() * 8,
+    size: 12 + Math.random() * 20,
+    opacity: 0.2 + Math.random() * 0.5,
+  }));
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-      {elements.map((el, i) => (
+      {hearts.map((heart) => (
         <motion.div
-          key={i}
-          className="absolute text-pink-300/40"
-          style={{ left: el.x, top: el.y }}
-          animate={{ y: [0, -30, 0], rotate: [0, 10, -10, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 6, delay: el.delay, repeat: Infinity, ease: 'easeInOut' }}
+          key={heart.id}
+          className="absolute text-pink-300"
+          style={{
+            left: `${heart.left}%`,
+            bottom: "-40px",
+            opacity: heart.opacity,
+          }}
+          animate={{
+            y: [-20, -1200],
+            x: [0, 30, -30, 20, 0],
+            rotate: [0, 20, -20, 0],
+            scale: [0.8, 1.2, 1],
+          }}
+          transition={{
+            duration: heart.duration,
+            delay: heart.delay,
+            repeat: Infinity,
+            ease: "linear",
+          }}
         >
-          <el.Icon size={el.size} fill="currentColor" />
+          <Heart
+            size={heart.size}
+            fill="currentColor"
+            strokeWidth={0}
+          />
         </motion.div>
       ))}
+
       <motion.div
-        className="absolute w-96 h-96 rounded-full opacity-20"
-        style={{ background: 'radial-gradient(circle, #f9a8d4 0%, transparent 70%)', left: '-10%', top: '20%' }}
-        animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute w-[500px] h-[500px] rounded-full bg-pink-300/20 blur-3xl"
+        style={{ left: "-150px", top: "100px" }}
+        animate={{ x: [0, 80, 0], y: [0, 40, 0] }}
+        transition={{ duration: 20, repeat: Infinity }}
       />
+
       <motion.div
-        className="absolute w-80 h-80 rounded-full opacity-15"
-        style={{ background: 'radial-gradient(circle, #f472b6 0%, transparent 70%)', right: '-5%', bottom: '10%' }}
-        animate={{ x: [0, -40, 0], y: [0, -50, 0] }}
-        transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute w-[400px] h-[400px] rounded-full bg-rose-300/20 blur-3xl"
+        style={{ right: "-100px", bottom: "0px" }}
+        animate={{ x: [0, -60, 0], y: [0, -50, 0] }}
+        transition={{ duration: 18, repeat: Infinity }}
       />
     </div>
-  )
+  );
 }
 
 // Landing Page Component
