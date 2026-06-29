@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { generateRoom } from "./lib/gemini"
 import {
   ArrowLeft, Sparkles, DollarSign, ShoppingBag, Home, Upload, X, Bed, Sofa, BookOpen, Check,
   Wand2, ArrowRight, Heart, Paintbrush, Lamp, Flower2, TrendingUp, ExternalLink, RotateCcw
@@ -99,94 +98,44 @@ const furnitureData: Record<DesignStyle, Array<{ name: string; description: stri
 
 // Floating Elements Component
 function FloatingElements() {
-  const hearts = Array.from({ length: 28 }, (_, i) => ({
-    id: i,
-    left:
-      Math.random() < 0.5
-        ? Math.random() * 20 // Left side
-        : 80 + Math.random() * 20, // Right side
-    delay: Math.random() * 10,
-    duration: 10 + Math.random() * 8,
-    size: 10 + Math.random() * 14,
-    opacity: 0.15 + Math.random() * 0.35,
-  }));
+  const elements = [
+    { Icon: Sparkles, x: '10%', y: '20%', delay: 0, size: 20 },
+    { Icon: Heart, x: '85%', y: '15%', delay: 1, size: 16 },
+    { Icon: Sparkles, x: '70%', y: '70%', delay: 2, size: 18 },
+    { Icon: Heart, x: '20%', y: '60%', delay: 0.5, size: 14 },
+    { Icon: Sparkles, x: '90%', y: '50%', delay: 1.5, size: 12 },
+    { Icon: Heart, x: '15%', y: '80%', delay: 2.5, size: 16 },
+    { Icon: Sparkles, x: '50%', y: '10%', delay: 3, size: 22 },
+    { Icon: Heart, x: '30%', y: '30%', delay: 0.8, size: 10 },
+  ]
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-10">
-
-      {hearts.map((heart) => (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {elements.map((el, i) => (
         <motion.div
-          key={heart.id}
-          className="absolute"
-          style={{
-            left: `${heart.left}%`,
-            bottom: "-50px",
-            opacity: heart.opacity,
-          }}
-          animate={{
-            y: [0, -1200],
-            x: [0, 25, -20, 15, 0],
-            rotate: [0, 15, -15, 10, 0],
-            scale: [0.7, 1.1, 0.9, 1],
-          }}
-          transition={{
-            duration: heart.duration,
-            delay: heart.delay,
-            repeat: Infinity,
-            ease: "linear",
-          }}
+          key={i}
+          className="absolute text-pink-300/40"
+          style={{ left: el.x, top: el.y }}
+          animate={{ y: [0, -30, 0], rotate: [0, 10, -10, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 6, delay: el.delay, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <Heart
-            size={heart.size}
-            fill="#f9a8d4"
-            stroke="none"
-          />
+          <el.Icon size={el.size} fill="currentColor" />
         </motion.div>
       ))}
-
-      {/* Soft Glow Left */}
       <motion.div
-        className="absolute rounded-full blur-3xl"
-        style={{
-          width: 450,
-          height: 450,
-          background:
-            "radial-gradient(circle,#f9a8d455 0%,transparent 70%)",
-          left: -150,
-          top: 150,
-        }}
-        animate={{
-          x: [0, 60, 0],
-          y: [0, 40, 0],
-        }}
-        transition={{
-          duration: 18,
-          repeat: Infinity,
-        }}
+        className="absolute w-96 h-96 rounded-full opacity-20"
+        style={{ background: 'radial-gradient(circle, #f9a8d4 0%, transparent 70%)', left: '-10%', top: '20%' }}
+        animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
       />
-
-      {/* Soft Glow Right */}
       <motion.div
-        className="absolute rounded-full blur-3xl"
-        style={{
-          width: 380,
-          height: 380,
-          background:
-            "radial-gradient(circle,#f472b655 0%,transparent 70%)",
-          right: -100,
-          bottom: 0,
-        }}
-        animate={{
-          x: [0, -50, 0],
-          y: [0, -30, 0],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-        }}
+        className="absolute w-80 h-80 rounded-full opacity-15"
+        style={{ background: 'radial-gradient(circle, #f472b6 0%, transparent 70%)', right: '-5%', bottom: '10%' }}
+        animate={{ x: [0, -40, 0], y: [0, -50, 0] }}
+        transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
       />
     </div>
-  );
+  )
 }
 
 // Landing Page Component
@@ -233,36 +182,22 @@ function RoomUpload({ onUpload }: { onUpload: (image: string, roomType: RoomType
   const [image, setImage] = useState<string>('')
   const [isDragActive, setIsDragActive] = useState(false)
 
-const handleDrop = (e: React.DragEvent) => {
-  e.preventDefault();
-  setIsDragActive(false);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragActive(false)
+    const file = e.dataTransfer.files[0]
+    if (file && file.type.startsWith('image/')) {
+      setImage(URL.createObjectURL(file))
+    }
+  }
 
-  const file = e.dataTransfer.files[0];
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImage(URL.createObjectURL(file))
+    }
+  }
 
-  if (!file || !file.type.startsWith("image/")) return;
-
-  const reader = new FileReader();
-
-  reader.onloadend = () => {
-    setImage(reader.result as string);
-  };
-
-  reader.readAsDataURL(file);
-};
-
-const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-
-  if (!file) return;
-
-  const reader = new FileReader();
-
-  reader.onloadend = () => {
-    setImage(reader.result as string);
-  };
-
-  reader.readAsDataURL(file);
-};
   return (
     <div className="min-h-screen px-6 py-12 pt-24">
       <div className="max-w-5xl mx-auto">
@@ -341,40 +276,25 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
   const [stage, setStage] = useState(0)
   const [generated, setGenerated] = useState('')
 
-  const handleGenerate = async () => {
-  setIsGenerating(true)
-  setStage(0)
-  setGenerated('')
+  const handleGenerate = () => {
+    setIsGenerating(true)
+    setStage(0)
+    setGenerated('')
 
-  try {
     const interval = setInterval(() => {
-      setStage((s) => (s < 3 ? s + 1 : s))
+      setStage(s => {
+        if (s >= 3) { clearInterval(interval); return s }
+        return s + 1
+      })
     }, 1500)
 
-    const result = await generateRoom(image, style)
-
-    clearInterval(interval)
-
-    const generatedImage =
-  result?.candidates?.[0]?.content?.parts?.find(
-    (p: any) => p.inlineData?.data
-  )?.inlineData?.data;
-
-    if (!generatedImage) {
-      throw new Error("No image returned from Gemini")
-    }
-
-    const finalImage = `data:image/png;base64,${generatedImage}`
-
-    setGenerated(finalImage)
-    onComplete(style, finalImage)
-  } catch (error) {
-    console.error(error)
-    alert("AI generation failed.")
-  } finally {
-    setIsGenerating(false)
+    setTimeout(() => {
+      const resultImage = transformedRooms[style][roomType]
+      setIsGenerating(false)
+      setGenerated(resultImage)
+      onComplete(style, resultImage)
+    }, 6000)
   }
-}
 
   return (
     <div className="min-h-screen px-6 py-12 pt-24">
