@@ -242,6 +242,12 @@ const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
   reader.readAsDataURL(file);
 };
 
+return (
+  // Your entire RoomUpload JSX goes here
+);
+
+} // <-- This closes RoomUpload
+
 // Room Makeover Component
 function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType: RoomType; onComplete: (style: DesignStyle, generated: string) => void }) {
   const [style, setStyle] = useState<DesignStyle>('minimal')
