@@ -23,7 +23,7 @@ export async function generateRoomDesign(
               },
               {
                 inlineData: {
-                  mimeType: "image/jpeg",
+                  mimeType: "image/png"
                   data: base64,
                 },
               },
