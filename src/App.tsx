@@ -210,92 +210,36 @@ function RoomUpload({ onUpload }: { onUpload: (image: string, roomType: RoomType
   const [image, setImage] = useState<string>('')
   const [isDragActive, setIsDragActive] = useState(false)
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragActive(false)
-    const file = e.dataTransfer.files[0]
-    if (file && file.type.startsWith('image/')) {
-      setImage(URL.createObjectURL(file))
-    }
-  }
+const handleDrop = (e: React.DragEvent) => {
+  e.preventDefault();
+  setIsDragActive(false);
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImage(URL.createObjectURL(file))
-    }
-  }
+  const file = e.dataTransfer.files[0];
 
-  return (
-    <div className="min-h-screen px-6 py-12 pt-24">
-      <div className="max-w-5xl mx-auto">
-        <motion.div className="text-center mb-10" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-gray-800 mb-3">Upload Your <span className="gradient-text">Room</span></h2>
-          <p className="text-gray-500 text-lg">Select your room type and upload an image</p>
-        </motion.div>
+  if (!file || !file.type.startsWith("image/")) return;
 
-        <motion.div className="mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {roomTypes.map((room) => {
-              const Icon = room.icon
-              return (
-                <motion.button key={room.id} onClick={() => setSelectedRoom(room.id)} className={`style-card glass-card rounded-2xl p-4 flex items-center gap-4 ${selectedRoom === room.id ? 'selected' : ''}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-                    <img src={room.image} alt={room.label} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 text-left flex items-center gap-2">
-                    <Icon className="w-5 h-5 text-pink-500" />
-                    <span className="font-semibold text-gray-800">{room.label}</span>
-                  </div>
-                  {selectedRoom === room.id && <Check className="w-5 h-5 text-pink-500" />}
-                </motion.button>
-              )
-            })}
-          </div>
-        </motion.div>
+  const reader = new FileReader();
 
-        <AnimatePresence mode="wait">
-          {!image ? (
-            <motion.div
-              key="upload"
-              className={`upload-zone glass-card rounded-3xl p-12 md:p-20 cursor-pointer ${isDragActive ? 'active' : ''}`}
-              onDragOver={(e) => { e.preventDefault(); setIsDragActive(true) }}
-              onDragLeave={() => setIsDragActive(false)}
-              onDrop={handleDrop}
-              onClick={() => document.getElementById('fileInput')?.click()}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <input id="fileInput" type="file" accept="image/*" className="hidden" onChange={handleFileInput} />
-              <div className="text-center">
-                <motion.div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-pink-500 mx-auto mb-6 flex items-center justify-center shadow-lg" animate={{ y: isDragActive ? -10 : 0 }}>
-                  <Upload className="w-10 h-10 text-white" />
-                </motion.div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{isDragActive ? 'Drop your image here' : 'Drag & drop your room image'}</h3>
-                <p className="text-gray-500">or click to browse files</p>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div key="preview" className="glass-card rounded-3xl overflow-hidden" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              <div className="relative">
-                <img src={image} alt="Uploaded" className="w-full h-64 md:h-96 object-cover" />
-                <button onClick={() => setImage('')} className="absolute top-4 right-4 w-10 h-10 rounded-full glass-button flex items-center justify-center hover:bg-white">
-                  <X className="w-5 h-5 text-gray-600" />
-                </button>
-              </div>
-              <div className="p-6 text-center">
-                <motion.button onClick={() => onUpload(image, selectedRoom)} className="btn-primary text-lg px-10 py-4" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                  Transform This Room
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  )
-}
+  reader.onloadend = () => {
+    setImage(reader.result as string);
+  };
+
+  reader.readAsDataURL(file);
+};
+
+const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onloadend = () => {
+    setImage(reader.result as string);
+  };
+
+  reader.readAsDataURL(file);
+};
 
 // Room Makeover Component
 function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType: RoomType; onComplete: (style: DesignStyle, generated: string) => void }) {
