@@ -249,7 +249,7 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
   const [stage, setStage] = useState(0)
   const [generated, setGenerated] = useState('')
 
-  const handleGenerate = async () => {
+ const handleGenerate = async () => {
   setIsGenerating(true);
   setStage(0);
   setGenerated("");
@@ -265,20 +265,24 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
   }, 1500);
 
   try {
-    // Gemini API will be added here in the next step.
+    const result = await generateRoomDesign(
+      image,
+      roomType,
+      style
+    );
 
-    await new Promise((resolve) => setTimeout(resolve, 6000));
+    clearInterval(interval);
 
-    // Temporary placeholder
-    setGenerated(image);
-    onComplete(style, image);
-  } const result = await generateRoomDesign(
-  image,
-  roomType,
-  style
-);
-
-console.log(result);
+    setGenerated(result);
+    onComplete(style, result);
+  } catch (error) {
+    console.error(error);
+    alert("Failed to generate room design.");
+  } finally {
+    clearInterval(interval);
+    setIsGenerating(false);
+  }
+};
 
 // Budget Estimator Component
 function BudgetEstimator({ style }: { style: DesignStyle }) {
