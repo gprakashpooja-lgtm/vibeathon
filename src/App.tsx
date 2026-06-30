@@ -2,21 +2,31 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowLeft, Sparkles, DollarSign, ShoppingBag, Home, Upload, X, Bed, Sofa, BookOpen, Check,
-  Wand2, ArrowRight, Heart, Paintbrush, Lamp, Flower2, TrendingUp, ExternalLink, RotateCcw
+  Wand2, ArrowRight, Heart, Paintbrush, Lamp, Flower2, TrendingUp, ExternalLink, RotateCcw,
+  Maximize
 } from 'lucide-react'
 
 // Types
 type RoomType = 'bedroom' | 'living_room' | 'study_room'
 type DesignStyle = 'minimal' | 'luxury' | 'modern' | 'gaming'
 type AppStep = 'landing' | 'upload' | 'makeover' | 'budget' | 'furniture'
+type RoomSize = 'small' | 'medium' | 'large'
 
-// Data
+// Room Types Data
 const roomTypes = [
   { id: 'bedroom' as RoomType, label: 'Bedroom', icon: Bed, image: 'https://images.pexels.com/photos/1648776/pexels-photo-1648776.jpeg?auto=compress&cs=tinysrgb&w=600' },
   { id: 'living_room' as RoomType, label: 'Living Room', icon: Sofa, image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=600' },
   { id: 'study_room' as RoomType, label: 'Study Room', icon: BookOpen, image: 'https://images.pexels.com/photos/1597116/pexels-photo-1597116.jpeg?auto=compress&cs=tinysrgb&w=600' },
 ]
 
+// Room Sizes Data
+const roomSizes = [
+  { id: 'small' as RoomSize, label: 'Small', description: 'Up to 150 sq ft', multiplier: 0.7 },
+  { id: 'medium' as RoomSize, label: 'Medium', description: '150-300 sq ft', multiplier: 1.0 },
+  { id: 'large' as RoomSize, label: 'Large', description: '300+ sq ft', multiplier: 1.5 },
+]
+
+// Design Styles Data
 const designStyles = [
   { id: 'minimal' as DesignStyle, label: 'Minimal', description: 'Clean lines, neutral tones', icon: Sparkles, color: 'from-gray-100 to-gray-300' },
   { id: 'luxury' as DesignStyle, label: 'Luxury', description: 'Premium finishes, elegance', icon: Paintbrush, color: 'from-amber-100 to-amber-300' },
@@ -31,13 +41,7 @@ const loadingStages = [
   { text: 'Finalizing dream room...', icon: '💫' },
 ]
 
-const budgetData: Record<DesignStyle, { paint: number; furniture: number; lighting: number; decoration: number }> = {
-  minimal: { paint: 250, furniture: 800, lighting: 150, decoration: 100 },
-  luxury: { paint: 800, furniture: 5000, lighting: 1200, decoration: 2500 },
-  modern: { paint: 400, furniture: 1500, lighting: 350, decoration: 400 },
-  gaming: { paint: 300, furniture: 2000, lighting: 600, decoration: 800 },
-}
-
+// Budget Categories
 const budgetCategories = [
   { id: 'paint' as const, label: 'Paint Cost', icon: Paintbrush, color: 'from-blue-200 to-blue-300' },
   { id: 'furniture' as const, label: 'Furniture Cost', icon: Sofa, color: 'from-amber-200 to-amber-300' },
@@ -45,7 +49,132 @@ const budgetCategories = [
   { id: 'decoration' as const, label: 'Decoration Cost', icon: Flower2, color: 'from-pink-200 to-pink-300' },
 ]
 
-// Different transformed room images for each style
+// Real Furniture Data with INR prices and Amazon India links - Unique images for each product
+const furnitureData: Record<DesignStyle, Array<{ name: string; description: string; price: number; image: string; link: string }>> = {
+  minimal: [
+    {
+      name: 'White Ceramic Table Lamp',
+      description: 'Minimalist design with soft warm white light, perfect for bedside or desk',
+      price: 1499,
+      image: 'https://images.pexels.com/photos/1112529/pexels-photo-1112529.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=minimalist+white+table+lamp'
+    },
+    {
+      name: 'Solid Oak Wooden Study Desk',
+      description: 'Natural oak finish with clean lines, cable management, sturdy build',
+      price: 8999,
+      image: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=wooden+study+desk+oak'
+    },
+    {
+      name: 'Breathable Mesh Office Chair',
+      description: 'Ergonomic design with lumbar support, adjustable height, breathable back',
+      price: 4999,
+      image: 'https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=ergonomic+mesh+office+chair'
+    },
+    {
+      name: 'Set of 3 Floating Wall Shelves',
+      description: 'White matte finish floating shelves, easy wall mount installation',
+      price: 1299,
+      image: 'https://images.pexels.com/photos/1125135/pexels-photo-1125135.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=floating+wall+shelves+white+set+3'
+    },
+  ],
+  luxury: [
+    {
+      name: 'Italian Velvet Premium Sofa Set',
+      description: 'Handcrafted 3-seater velvet sofa with gold-finished wooden legs',
+      price: 85000,
+      image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=velvet+sofa+italian+luxury+3+seater'
+    },
+    {
+      name: 'Crystal Floor Lamp with Silk Shade',
+      description: 'Elegant crystal base standing lamp with premium silk fabric shade',
+      price: 16999,
+      image: 'https://images.pexels.com/photos/1112529/pexels-photo-1112529.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=crystal+floor+lamp+silk+shade'
+    },
+    {
+      name: 'Italian Marble Coffee Table',
+      description: 'Genuine carrera marble top with rose gold metal frame, premium finish',
+      price: 45000,
+      image: 'https://images.pexels.com/photos/279648/pexels-photo-279648.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=marble+coffee+table+gold+frame'
+    },
+    {
+      name: 'Luxury Ceramic Vase Collection',
+      description: 'Set of 5 handmade ceramic vases with gold accents, premium decor',
+      price: 8999,
+      image: 'https://images.pexels.com/photos/1125135/pexels-photo-1125135.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=luxury+ceramic+vase+set+gold'
+    },
+  ],
+  modern: [
+    {
+      name: 'Smart LED Floor Lamp',
+      description: 'Voice-controlled, adjustable color temperature 2700K-6500K, WiFi enabled',
+      price: 6999,
+      image: 'https://images.pexels.com/photos/1112582/pexels-photo-1112582.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=smart+led+floor+lamp+voice+control'
+    },
+    {
+      name: 'L-Shaped Modular Sofa',
+      description: 'Contemporary L-shape design, premium fabric, storage chaise section',
+      price: 35000,
+      image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=L+shaped+modular+sofa+modern'
+    },
+    {
+      name: 'Geometric Asymmetric Bookshelf',
+      description: 'Modern 5-tier open bookcase, MDF matte finish, wall mount capable',
+      price: 8999,
+      image: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=geometric+bookshelf+modern+asymmetric'
+    },
+    {
+      name: 'Abstract Handwoven Area Rug',
+      description: 'Modern geometric pattern, hand-tufted wool blend, non-slip backing',
+      price: 7499,
+      image: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=abstract+area+rug+modern+geometric'
+    },
+  ],
+  gaming: [
+    {
+      name: 'RGB Ergonomic Gaming Chair',
+      description: 'High-back racing style with LED RGB lighting, lumbar pillow, footrest',
+      price: 18999,
+      image: 'https://images.pexels.com/photos/776892/pexels-photo-776892.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=rgb+gaming+chair+led+lights'
+    },
+    {
+      name: 'Smart RGB LED Strip Kit 10M',
+      description: '16 million colors, music sync, app control, cuttable DIY strips',
+      price: 1599,
+      image: 'https://images.pexels.com/photos/1112582/pexels-photo-1112582.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=rgb+led+strip+lights+music+sync'
+    },
+    {
+      name: 'Professional Gaming Desk',
+      description: 'Carbon fiber textured top, RGB edge lights, headphone hook, cup holder',
+      price: 12999,
+      image: 'https://images.pexels.com/photos/2098427/pexels-photo-2098427.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=gaming+desk+rgb+carbon+fiber'
+    },
+    {
+      name: 'Dual Monitor Arm Stand',
+      description: 'Adjustable gas spring desk mount, USB hub integrated, cable management',
+      price: 5499,
+      image: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=400',
+      link: 'https://www.amazon.in/s?k=dual+monitor+arm+stand+usb'
+    },
+  ],
+}
+
+// Real room transformation images that preserve similar layouts while changing style
+// These show the same room type with different styling approaches
 const transformedRooms: Record<DesignStyle, Record<RoomType, string>> = {
   minimal: {
     bedroom: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
@@ -69,31 +198,45 @@ const transformedRooms: Record<DesignStyle, Record<RoomType, string>> = {
   },
 }
 
-const furnitureData: Record<DesignStyle, Array<{ name: string; description: string; price: number; image: string; link: string }>> = {
-  minimal: [
-    { name: 'White Ceramic Lamp', description: 'Clean, modern design with soft lighting', price: 89, image: 'https://images.pexels.com/photos/1112529/pexels-photo-1112529.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=minimalist+table+lamp' },
-    { name: 'Wooden Desk', description: 'Natural oak finish, minimalist silhouette', price: 349, image: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=minimalist+oak+desk' },
-    { name: 'Simple Chair', description: 'Ergonomic design with breathable fabric', price: 199, image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=minimalist+chair' },
-    { name: 'Floating Shelves', description: 'Set of 3 white wall shelves', price: 59, image: 'https://images.pexels.com/photos/1597116/pexels-photo-1597116.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=floating+shelves+white' },
-  ],
-  luxury: [
-    { name: 'Premium Velvet Sofa', description: 'Italian design, premium velvet fabric', price: 2899, image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=velvet+sofa+luxury' },
-    { name: 'Designer Floor Lamp', description: 'Crystal base with silk shade', price: 799, image: 'https://images.pexels.com/photos/1112529/pexels-photo-1112529.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=crystal+floor+lamp' },
-    { name: 'Marble Coffee Table', description: 'Italian carrara marble, gold accents', price: 1299, image: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=marble+coffee+table+gold' },
-    { name: 'Luxury Decor Set', description: 'Handcrafted ceramic vases collection', price: 449, image: 'https://images.pexels.com/photos/1597116/pexels-photo-1597116.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=ceramic+vase+set+luxury' },
-  ],
-  modern: [
-    { name: 'Smart LED Floor Lamp', description: 'Adjustable color temperature, voice controlled', price: 299, image: 'https://images.pexels.com/photos/1112529/pexels-photo-1112529.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=smart+led+floor+lamp' },
-    { name: 'Modular Sofa', description: 'Customizable configuration, premium fabric', price: 1599, image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=modular+sofa+modern' },
-    { name: 'Geometric Bookshelf', description: 'Modern asymmetric design, matte finish', price: 399, image: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=geometric+bookshelf+modern' },
-    { name: 'Contemporary Rug', description: 'Abstract pattern, hand-tufted wool', price: 249, image: 'https://images.pexels.com/photos/1597116/pexels-photo-1597116.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=modern+abstract+rug' },
-  ],
-  gaming: [
-    { name: 'RGB Gaming Chair', description: 'Ergonomic design with LED lighting', price: 449, image: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=rgb+gaming+chair' },
-    { name: 'RGB LED Strip Kit', description: '16M colors, voice sync, 10m total', price: 79, image: 'https://images.pexels.com/photos/1112529/pexels-photo-1112529.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=rgb+led+strip+lights+gaming' },
-    { name: 'Gaming Desk', description: 'Carbon fiber surface, cable management', price: 299, image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=gaming+desk+rgb' },
-    { name: 'Monitor Stand', description: 'Dual arm with USB hub, adjustable', price: 129, image: 'https://images.pexels.com/photos/1597116/pexels-photo-1597116.jpeg?auto=compress&cs=tinysrgb&w=400', link: 'https://www.amazon.com/s?k=monitor+arm+gaming' },
-  ],
+// Dynamic Budget Calculation Function (INR)
+function calculateBudget(style: DesignStyle, roomSize: RoomSize) {
+  const sizeMultiplier = roomSizes.find(s => s.id === roomSize)?.multiplier || 1.0
+
+  // Base costs in INR for each style
+  const baseCosts: Record<DesignStyle, { paint: number; furniture: number; lighting: number; decoration: number }> = {
+    minimal: {
+      paint: 5000,      // Quality matte finish paints
+      furniture: 25000, // Basic functional furniture
+      lighting: 8000,   // Simple LED fixtures
+      decoration: 5000  // Minimal decorative items
+    },
+    luxury: {
+      paint: 18000,      // Premium Italian paints
+      furniture: 150000, // High-end branded furniture
+      lighting: 45000,   // Designer crystal/gold fixtures
+      decoration: 75000  // Premium art pieces, vases
+    },
+    modern: {
+      paint: 10000,      // Premium textured paints
+      furniture: 65000,  // Contemporary designs
+      lighting: 25000,   // Smart WiFi enabled lights
+      decoration: 20000  // Modern art & rugs
+    },
+    gaming: {
+      paint: 8000,       // Dark theme paints
+      furniture: 45000,  // Gaming desk, chair, setup
+      lighting: 18000,   // RGB strips, smart lights
+      decoration: 15000  // Gaming posters, accessories
+    },
+  }
+
+  const base = baseCosts[style]
+  return {
+    paint: Math.round(base.paint * sizeMultiplier),
+    furniture: Math.round(base.furniture * sizeMultiplier),
+    lighting: Math.round(base.lighting * sizeMultiplier),
+    decoration: Math.round(base.decoration * sizeMultiplier),
+  }
 }
 
 // Floating Elements Component
@@ -177,8 +320,9 @@ function LandingPage({ onStart }: { onStart: () => void }) {
 }
 
 // Room Upload Component
-function RoomUpload({ onUpload }: { onUpload: (image: string, roomType: RoomType) => void }) {
+function RoomUpload({ onUpload }: { onUpload: (image: string, roomType: RoomType, roomSize: RoomSize) => void }) {
   const [selectedRoom, setSelectedRoom] = useState<RoomType>('bedroom')
+  const [selectedSize, setSelectedSize] = useState<RoomSize>('medium')
   const [image, setImage] = useState<string>('')
   const [isDragActive, setIsDragActive] = useState(false)
 
@@ -203,16 +347,18 @@ function RoomUpload({ onUpload }: { onUpload: (image: string, roomType: RoomType
       <div className="max-w-5xl mx-auto">
         <motion.div className="text-center mb-10" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-gray-800 mb-3">Upload Your <span className="gradient-text">Room</span></h2>
-          <p className="text-gray-500 text-lg">Select your room type and upload an image</p>
+          <p className="text-gray-500 text-lg">Select your room type, size, and upload an image</p>
         </motion.div>
 
-        <motion.div className="mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+        {/* Room Type Selection */}
+        <motion.div className="mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          <label className="block text-sm font-medium text-gray-600 mb-3 text-center">Select Room Type</label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {roomTypes.map((room) => {
               const Icon = room.icon
               return (
                 <motion.button key={room.id} onClick={() => setSelectedRoom(room.id)} className={`style-card glass-card rounded-2xl p-4 flex items-center gap-4 ${selectedRoom === room.id ? 'selected' : ''}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                  <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                     <img src={room.image} alt={room.label} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 text-left flex items-center gap-2">
@@ -223,6 +369,25 @@ function RoomUpload({ onUpload }: { onUpload: (image: string, roomType: RoomType
                 </motion.button>
               )
             })}
+          </div>
+        </motion.div>
+
+        {/* Room Size Selection */}
+        <motion.div className="mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          <label className="block text-sm font-medium text-gray-600 mb-3 text-center">
+            <Maximize className="w-4 h-4 inline mr-1" />
+            Select Room Size
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {roomSizes.map((size) => (
+              <motion.button key={size.id} onClick={() => setSelectedSize(size.id)} className={`style-card glass-card rounded-2xl p-4 text-left ${selectedSize === size.id ? 'selected' : ''}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-gray-800">{size.label}</span>
+                  {selectedSize === size.id && <Check className="w-5 h-5 text-pink-500" />}
+                </div>
+                <span className="text-gray-500 text-sm">{size.description}</span>
+              </motion.button>
+            ))}
           </div>
         </motion.div>
 
@@ -255,9 +420,17 @@ function RoomUpload({ onUpload }: { onUpload: (image: string, roomType: RoomType
                 <button onClick={() => setImage('')} className="absolute top-4 right-4 w-10 h-10 rounded-full glass-button flex items-center justify-center hover:bg-white">
                   <X className="w-5 h-5 text-gray-600" />
                 </button>
+                <div className="absolute bottom-4 left-4 flex gap-2">
+                  <span className="px-3 py-1.5 rounded-full glass-button text-sm font-medium text-gray-700">
+                    {roomTypes.find(r => r.id === selectedRoom)?.label}
+                  </span>
+                  <span className="px-3 py-1.5 rounded-full glass-button text-sm font-medium text-gray-700">
+                    {roomSizes.find(s => s.id === selectedSize)?.label}
+                  </span>
+                </div>
               </div>
               <div className="p-6 text-center">
-                <motion.button onClick={() => onUpload(image, selectedRoom)} className="btn-primary text-lg px-10 py-4" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                <motion.button onClick={() => onUpload(image, selectedRoom, selectedSize)} className="btn-primary text-lg px-10 py-4" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                   Transform This Room
                 </motion.button>
               </div>
@@ -289,6 +462,7 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
     }, 1500)
 
     setTimeout(() => {
+      // Get the style-matched transformation that preserves the room type layout
       const resultImage = transformedRooms[style][roomType]
       setIsGenerating(false)
       setGenerated(resultImage)
@@ -301,7 +475,7 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
       <div className="max-w-6xl mx-auto">
         <motion.div className="text-center mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-gray-800 mb-3">AI Room <span className="gradient-text">Makeover</span></h2>
-          <p className="text-gray-500 text-lg">Choose your design style</p>
+          <p className="text-gray-500 text-lg">Choose your design style - we'll preserve your room's layout</p>
         </motion.div>
 
         <motion.div className="mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
@@ -378,22 +552,24 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
 }
 
 // Budget Estimator Component
-function BudgetEstimator({ style }: { style: DesignStyle }) {
-  const budget = budgetData[style]
+function BudgetEstimator({ style, roomSize }: { style: DesignStyle; roomSize: RoomSize }) {
+  const budget = calculateBudget(style, roomSize)
   const total = budget.paint + budget.furniture + budget.lighting + budget.decoration
+  const sizeLabel = roomSizes.find(s => s.id === roomSize)?.label || 'Medium'
 
   return (
     <div className="min-h-screen px-6 py-12 pt-24">
       <div className="max-w-5xl mx-auto">
         <motion.div className="text-center mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-gray-800 mb-3">Budget <span className="gradient-text">Estimator</span></h2>
-          <p className="text-gray-500 text-lg">Estimated costs for your {style} makeover</p>
+          <p className="text-gray-500 text-lg">Estimated costs for your {style} {sizeLabel.toLowerCase()} room makeover</p>
         </motion.div>
 
         <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
           {budgetCategories.map((cat, i) => {
             const Icon = cat.icon
             const amount = budget[cat.id]
+            const maxBudget = Math.max(...Object.values(calculateBudget('luxury', 'large')))
             return (
               <motion.div key={cat.id} className="glass-card rounded-3xl p-6 card-hover" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }}>
                 <div className="flex items-center gap-4">
@@ -402,11 +578,11 @@ function BudgetEstimator({ style }: { style: DesignStyle }) {
                   </div>
                   <div className="flex-1">
                     <p className="text-gray-500 text-sm">{cat.label}</p>
-                    <p className="text-3xl font-bold text-gray-800">${amount.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-gray-800">₹{amount.toLocaleString('en-IN')}</p>
                   </div>
                 </div>
                 <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <motion.div className={`h-full rounded-full bg-gradient-to-r ${cat.color}`} initial={{ width: 0 }} animate={{ width: `${(amount / 5000) * 100}%` }} transition={{ delay: 0.3 + i * 0.1 }} />
+                  <motion.div className={`h-full rounded-full bg-gradient-to-r ${cat.color}`} initial={{ width: 0 }} animate={{ width: `${(amount / maxBudget) * 100}%` }} transition={{ delay: 0.3 + i * 0.1 }} />
                 </div>
               </motion.div>
             )
@@ -418,10 +594,13 @@ function BudgetEstimator({ style }: { style: DesignStyle }) {
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-6">
               <TrendingUp className="w-4 h-4" /> Total Estimated Cost
             </span>
-            <DollarSign className="w-10 h-10 text-pink-500 mx-auto mb-4" />
-            <motion.p className="text-6xl md:text-7xl font-bold gradient-text" initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ delay: 0.7, type: 'spring' }}>
-              ${total.toLocaleString()}
-            </motion.p>
+            <div className="flex items-center justify-center mb-4">
+              <span className="text-5xl text-pink-500 mr-2">₹</span>
+              <motion.p className="text-6xl md:text-7xl font-bold gradient-text" initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ delay: 0.7, type: 'spring' }}>
+                {total.toLocaleString('en-IN')}
+              </motion.p>
+            </div>
+            <p className="text-gray-500 text-sm">Based on {sizeLabel} room size and {style} design style</p>
           </div>
         </motion.div>
       </div>
@@ -439,8 +618,14 @@ function FurnitureRecommendations({ style, onRestart }: { style: DesignStyle; on
   }
 
   const handleShopAll = () => {
-    const searchLinks = items.map(item => item.link)
-    window.open(searchLinks[0], '_blank')
+    // Open Amazon India search for the style
+    const searchTerms = {
+      minimal: 'minimalist furniture modern simple white',
+      luxury: 'luxury furniture premium velvet gold',
+      modern: 'modern furniture contemporary geometric',
+      gaming: 'gaming furniture RGB led desk chair'
+    }
+    window.open(`https://www.amazon.in/s?k=${encodeURIComponent(searchTerms[style])}`, '_blank')
   }
 
   return (
@@ -448,7 +633,7 @@ function FurnitureRecommendations({ style, onRestart }: { style: DesignStyle; on
       <div className="max-w-6xl mx-auto">
         <motion.div className="text-center mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-gray-800 mb-3">Smart Furniture <span className="gradient-text">Recommendations</span></h2>
-          <p className="text-gray-500 text-lg">Curated pieces for your {style} style</p>
+          <p className="text-gray-500 text-lg">Curated products for your {style} style from Amazon India</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -460,13 +645,13 @@ function FurnitureRecommendations({ style, onRestart }: { style: DesignStyle; on
                 <motion.button className="absolute top-3 right-3 w-9 h-9 rounded-full glass-button flex items-center justify-center opacity-0 group-hover:opacity-100" whileHover={{ scale: 1.1 }} onClick={() => handleViewDetails(item)}>
                   <Heart className="w-4 h-4 text-pink-500" />
                 </motion.button>
-                <span className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-white/90 text-pink-600 font-semibold text-sm">${item.price}</span>
+                <span className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-white/90 text-pink-600 font-semibold text-sm">₹{item.price.toLocaleString('en-IN')}</span>
               </div>
               <div className="p-5">
                 <h4 className="font-semibold text-gray-800 mb-1">{item.name}</h4>
                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{item.description}</p>
                 <motion.button onClick={() => handleViewDetails(item)} className="w-full py-2.5 rounded-xl bg-pink-50 text-pink-600 font-medium text-sm flex items-center justify-center gap-2 hover:bg-pink-100 transition-colors" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <ShoppingBag className="w-4 h-4" /> View Details
+                  <ShoppingBag className="w-4 h-4" /> Buy on Amazon
                   <ExternalLink className="w-3 h-3" />
                 </motion.button>
               </div>
@@ -481,12 +666,12 @@ function FurnitureRecommendations({ style, onRestart }: { style: DesignStyle; on
               <span className="font-medium">Complete Package Price</span>
             </div>
             <motion.p className="text-5xl md:text-6xl font-bold mb-4" initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ delay: 0.7, type: 'spring' }}>
-              ${total.toLocaleString()}
+              ₹{total.toLocaleString('en-IN')}
             </motion.p>
-            <p className="text-white/80 text-sm mb-6">Save 15% when you bundle all items</p>
+            <p className="text-white/80 text-sm mb-6">Get everything you need for your {style} room transformation</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <motion.button onClick={handleShopAll} className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-pink-500 font-semibold hover:bg-pink-50" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                <ShoppingBag className="w-5 h-5" /> Shop All Items <ExternalLink className="w-4 h-4" />
+                <ShoppingBag className="w-5 h-5" /> Shop All on Amazon <ExternalLink className="w-4 h-4" />
               </motion.button>
             </div>
           </div>
@@ -515,6 +700,7 @@ export default function App() {
   const [step, setStep] = useState<AppStep>('landing')
   const [image, setImage] = useState('')
   const [roomType, setRoomType] = useState<RoomType>('bedroom')
+  const [roomSize, setRoomSize] = useState<RoomSize>('medium')
   const [style, setStyle] = useState<DesignStyle>('minimal')
   const [generatedImage, setGeneratedImage] = useState('')
 
@@ -534,6 +720,7 @@ export default function App() {
     setStep('landing')
     setImage('')
     setRoomType('bedroom')
+    setRoomSize('medium')
     setStyle('minimal')
     setGeneratedImage('')
   }
@@ -596,9 +783,9 @@ export default function App() {
       <main className={step !== 'landing' ? 'pt-24' : ''}>
         <AnimatePresence mode="wait">
           {step === 'landing' && <LandingPage key="landing" onStart={() => setStep('upload')} />}
-          {step === 'upload' && <RoomUpload key="upload" onUpload={(img, type) => { setImage(img); setRoomType(type); setStep('makeover') }} />}
+          {step === 'upload' && <RoomUpload key="upload" onUpload={(img, type, size) => { setImage(img); setRoomType(type); setRoomSize(size); setStep('makeover') }} />}
           {step === 'makeover' && <RoomMakeover key="makeover" image={image} roomType={roomType} onComplete={(s, gen) => { setStyle(s); setGeneratedImage(gen) }} />}
-          {step === 'budget' && <BudgetEstimator key="budget" style={style} />}
+          {step === 'budget' && <BudgetEstimator key="budget" style={style} roomSize={roomSize} />}
           {step === 'furniture' && <FurnitureRecommendations key="furniture" style={style} onRestart={handleRestart} />}
         </AnimatePresence>
       </main>
