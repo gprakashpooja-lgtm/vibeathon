@@ -34,13 +34,6 @@ const designStyles = [
   { id: 'gaming' as DesignStyle, label: 'Gaming Setup', description: 'RGB lights, gaming gear', icon: Home, color: 'from-purple-100 to-pink-300' },
 ]
 
-const loadingStages = [
-  { text: 'Analyzing room structure...', icon: '🔍' },
-  { text: 'Detecting walls and furniture...', icon: '🏠' },
-  { text: 'Generating new design...', icon: '✨' },
-  { text: 'Finalizing dream room...', icon: '💫' },
-]
-
 // Budget Categories
 const budgetCategories = [
   { id: 'paint' as const, label: 'Paint Cost', icon: Paintbrush, color: 'from-blue-200 to-blue-300' },
@@ -173,27 +166,42 @@ const furnitureData: Record<DesignStyle, Array<{ name: string; description: stri
   ],
 }
 
-// Real room transformation images that preserve similar layouts while changing style
-// These show the same room type with different styling approaches
+// Style-based room transformation simulation
+// Each combination uses realistic curated images that match the room type and style
+// Bedroom transformations show bedroom-appropriate styling for each design style
+// Living room transformations show living room-appropriate styling
+// Study room transformations show workspace-appropriate styling
 const transformedRooms: Record<DesignStyle, Record<RoomType, string>> = {
   minimal: {
+    // Minimal Bedroom: Clean white/neutral tones, simple bed, minimal decor
     bedroom: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    // Minimal Living Room: Simple sofa, clean lines, neutral palette
     living_room: 'https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    // Minimal Study: Simple desk, clean workspace, minimal distractions
     study_room: 'https://images.pexels.com/photos/279648/pexels-photo-279648.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   luxury: {
+    // Luxury Bedroom: Rich textures, elegant bedding, premium finishes
     bedroom: 'https://images.pexels.com/photos/1648776/pexels-photo-1648776.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    // Luxury Living Room: High-end furniture, elegant decor, sophisticated palette
     living_room: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    study_room: 'https://images.pexels.com/photos/1112530/pexels-photo-1112530.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    // Luxury Study: Premium home office, rich wood tones, executive feel
+    study_room: 'https://images.pexels.com/photos/1112530/pexels-photo-2580530.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   modern: {
-    bedroom: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    living_room: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    // Modern Bedroom: Contemporary design, bold accents, sleek furniture
+    bedroom: 'https://images.pexels.com/photos/271619/pexels-photo-271619.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    // Modern Living Room: Contemporary sofa, geometric patterns, trendy decor
+    living_room: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    // Modern Study: Contemporary workspace, tech-friendly, clean modern lines
     study_room: 'https://images.pexels.com/photos/1597116/pexels-photo-1597116.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   gaming: {
+    // Gaming Bedroom: RGB lighting, gaming setup, gaming chair visible
     bedroom: 'https://images.pexels.com/photos/776892/pexels-photo-776892.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    living_room: 'https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    // Gaming Living Room: Entertainment setup, large screen, ambient gaming lights
+    living_room: 'https://images.pexels.com/photos/271622/pexels-photo-271622.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    // Gaming Study: Full gaming battlestation, RGB desk, gaming peripherals
     study_room: 'https://images.pexels.com/photos/2098427/pexels-photo-2098427.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
 }
@@ -449,6 +457,17 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
   const [stage, setStage] = useState(0)
   const [generated, setGenerated] = useState('')
 
+  // Dynamic loading stages based on selected style
+  const getLoadingStages = (selectedStyle: DesignStyle) => {
+    const styleName = designStyles.find(s => s.id === selectedStyle)?.label || 'Modern'
+    return [
+      { text: 'Analyzing your room structure...', icon: '🔍' },
+      { text: `Applying ${styleName} design elements...`, icon: '🎨' },
+      { text: 'Matching furniture and decor...', icon: '🛋️' },
+      { text: 'Finalizing your dream room...', icon: '✨' },
+    ]
+  }
+
   const handleGenerate = () => {
     setIsGenerating(true)
     setStage(0)
@@ -462,7 +481,8 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
     }, 1500)
 
     setTimeout(() => {
-      // Get the style-matched transformation that preserves the room type layout
+      // Style-based transformation simulation
+      // Selects realistic curated image matching room type + style
       const resultImage = transformedRooms[style][roomType]
       setIsGenerating(false)
       setGenerated(resultImage)
@@ -502,7 +522,7 @@ function RoomMakeover({ image, roomType, onComplete }: { image: string; roomType
                 <Wand2 className="w-16 h-16 text-white" />
               </motion.div>
               <div className="max-w-md mx-auto space-y-4">
-                {loadingStages.map((s, i) => (
+                {getLoadingStages(style).map((s, i) => (
                   <motion.div key={i} className={`flex items-center gap-3 p-3 rounded-xl ${i <= stage ? 'bg-pink-50' : 'bg-gray-50 opacity-50'}`} animate={i === stage ? { x: [0, 5, 0] } : {}}>
                     <span className="text-2xl">{s.icon}</span>
                     <span className={`font-medium ${i <= stage ? 'text-pink-600' : 'text-gray-400'}`}>{s.text}</span>
